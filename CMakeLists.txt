@@ -47,6 +47,8 @@ else()
     # Use GITHUB_WORKSPACE if set (CI), otherwise use local path
     if(DEFINED ENV{GITHUB_WORKSPACE})
         set(OMPL_BASE "$ENV{GITHUB_WORKSPACE}")
+    elseif(EXISTS "/project/ompl")
+        set(OMPL_BASE "/project")
     else()
         set(OMPL_BASE "${CMAKE_SOURCE_DIR}")
     endif()
