@@ -48,7 +48,7 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF \
               -DBoost_ROOT=/usr/local \
               -DBOOST_ROOT=/usr/local
-            cmake --build /project/ompl/build --config Release --target ompl_lib -j4
+            cmake --build /project/ompl/build --config Release --target ompl -j4
 
           CIBW_BEFORE_ALL_MACOS: |
             brew install boost eigen cmake
@@ -61,7 +61,7 @@ jobs:
               -DOMPL_BUILD_PYBINDINGS=OFF \
               -DBUILD_SHARED_LIBS=OFF \
               -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
-            cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl -j4
+            cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl_lib -j4
 
           CIBW_BEFORE_ALL_WINDOWS: |
             C:/vcpkg/vcpkg.exe install boost:x64-windows eigen3:x64-windows
