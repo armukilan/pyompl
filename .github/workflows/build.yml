@@ -1,4 +1,4 @@
-name: Build and Publish
+name: Build and Publish pyompl
 
 on:
   push:
@@ -12,39 +12,105 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
+      - name: Install dependencies on Mac
+        if: runner.os == 'macOS'
+        run: |
+          brew install boost eigen cmake
+
+      - name: Install dependencies on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (Test-Path "C:/vcpkg") {
+            Remove-Item -Recurse -Force "C:/vcpkg"
+          }
+          git clone https://github.com/microsoft/vcpkg C:/vcpkg
+          C:/vcpkg/bootstrap-vcpkg.bat
+          C:/vcpkg/vcpkg install boost:x64-windows eigen3:x64-windows
+
+      - name: Build OMPL on Mac
+        if: runner.os == 'macOS'
+        run: |
+          cd $GITHUB_WORKSPACE/ompl
+          cmake -B $GITHUB_WORKSPACE/ompl/build -S . \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DOMPL_BUILD_DEMOS=OFF \
+            -DOMPL_BUILD_TESTS=OFF \
+            -DOMPL_BUILD_PYTESTS=OFF \
+            -DOMPL_BUILD_PYBINDINGS=OFF \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+          cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl -j4
+
+      - name: Build OMPL on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cmake -B "$env:GITHUB_WORKSPACE/ompl/build" -S "$env:GITHUB_WORKSPACE/ompl" `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DOMPL_BUILD_DEMOS=OFF `
+            -DOMPL_BUILD_TESTS=OFF `
+            -DOMPL_BUILD_PYTESTS=OFF `
+            -DOMPL_BUILD_PYBINDINGS=OFF `
+            -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
+            -DBUILD_SHARED_LIBS=OFF `
+            -DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES"
+          cmake --build "$env:GITHUB_WORKSPACE/ompl/build" --config Release --target ompl
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
           CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
           CIBW_SKIP: "*-musllinux* *-win32 *-manylinux_i686"
+          CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: "x86_64 arm64"
-          CIBW_ARCHS_WINDOWS: "AMD64"
-          CIBW_ARCHS_LINUX: "x86_64"
           CIBW_BUILD_VERBOSITY: 1
 
+          # Use modern manylinux with dnf and new enough glibc
+          CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_34_x86_64
+
+          # Linux: install deps + build boost from source + build OMPL
           CIBW_BEFORE_ALL_LINUX: |
-            yum install -y cmake eigen3-devel curl
+            dnf install -y cmake eigen3-devel curl gcc-c++ make
+            # Boost from source (dnf boost is too old)
             cd /tmp
             curl -L https://archives.boost.io/release/1.80.0/source/boost_1_80_0.tar.gz -o boost.tar.gz
             tar xzf boost.tar.gz
             cd /tmp/boost_1_80_0
             ./bootstrap.sh --with-libraries=serialization,thread,filesystem,date_time,chrono,atomic,system,program_options
             ./b2 install --prefix=/usr/local -j4
-
-          CIBW_BEFORE_ALL_MACOS: |
-            brew install boost eigen cmake
-
-          CIBW_BEFORE_ALL_WINDOWS: |
-            C:/vcpkg/vcpkg.exe install boost:x64-windows eigen3:x64-windows
+            # Build OMPL
+            cd /project/ompl
+            cmake -B /project/ompl/build -S . \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DOMPL_BUILD_DEMOS=OFF \
+              -DOMPL_BUILD_TESTS=OFF \
+              -DOMPL_BUILD_PYTESTS=OFF \
+              -DOMPL_BUILD_PYBINDINGS=OFF \
+              -DBUILD_SHARED_LIBS=OFF \
+              -DBOOST_ROOT=/usr/local \
+              -DBoost_ROOT=/usr/local
+            cmake --build /project/ompl/build --config Release --target ompl -j4
+            echo "=== OMPL build done ==="
+            ls /project/ompl/build/src/ompl/libompl.a
 
           CIBW_BEFORE_BUILD: "pip install pybind11 scikit-build-core"
+
+          CIBW_ENVIRONMENT_WINDOWS: >-
+            CMAKE_PREFIX_PATH="C:/vcpkg/installed/x64-windows"
+            CMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            GITHUB_WORKSPACE="$env:GITHUB_WORKSPACE"
+
+          CIBW_ENVIRONMENT_MACOS: >-
+            MACOSX_DEPLOYMENT_TARGET=11.0
+            GITHUB_WORKSPACE=$GITHUB_WORKSPACE
 
       - uses: actions/upload-artifact@v4
         with:
@@ -54,8 +120,10 @@ jobs:
   publish:
     needs: build_wheels
     runs-on: ubuntu-latest
+    if: success()
     permissions:
       id-token: write
+      contents: read
     steps:
       - uses: actions/download-artifact@v4
         with:

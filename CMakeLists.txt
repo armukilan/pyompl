@@ -1,78 +1,70 @@
 cmake_minimum_required(VERSION 3.15)
 project(pyompl)
 
-include(ExternalProject)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
+find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG REQUIRED)
-find_package(Boost REQUIRED COMPONENTS serialization thread filesystem date_time chrono atomic program_options)
-find_package(Eigen3 REQUIRED)
 
-set(OMPL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ompl/src")
-set(OMPL_BUILD_DIR "${CMAKE_BINARY_DIR}/ompl_build")
-set(OMPL_LIB "${OMPL_BUILD_DIR}/src/ompl/libompl.a")
+if(WIN32)
+    find_package(Boost REQUIRED COMPONENTS
+        serialization thread filesystem date_time chrono atomic program_options
+        HINTS "C:/vcpkg/installed/x64-windows"
+    )
+    find_package(Eigen3 REQUIRED HINTS "C:/vcpkg/installed/x64-windows")
 
-# Build OMPL as part of our build
-ExternalProject_Add(ompl_external
-    SOURCE_DIR "${CMAKE_SOURCE_DIR}/ompl"
-    BINARY_DIR "${OMPL_BUILD_DIR}"
-    CMAKE_ARGS
-        -DCMAKE_BUILD_TYPE=Release
-        -DOMPL_BUILD_DEMOS=OFF
-        -DOMPL_BUILD_TESTS=OFF
-        -DOMPL_BUILD_PYTESTS=OFF
-        -DOMPL_BUILD_PYBINDINGS=OFF
-        -DBUILD_SHARED_LIBS=OFF
-        -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-        -DBoost_ROOT=${Boost_DIR}/../../..
-        -DBOOST_ROOT=${Boost_DIR}/../../..
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
-    BUILD_COMMAND ${CMAKE_COMMAND} --build . --config Release --target ompl -j4
-    INSTALL_COMMAND ""
-    BUILD_BYPRODUCTS "${OMPL_LIB}"
-)
+    set(OMPL_LIB "$ENV{GITHUB_WORKSPACE}/ompl/build/src/ompl/Release/ompl.lib")
+
+    if(NOT EXISTS "${OMPL_LIB}")
+        set(OMPL_LIB "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/Release/ompl.lib")
+    endif()
+
+elseif(APPLE)
+    find_package(Boost REQUIRED COMPONENTS
+        serialization thread filesystem date_time chrono atomic program_options
+    )
+    find_package(Eigen3 REQUIRED)
+
+    set(OMPL_LIB "$ENV{GITHUB_WORKSPACE}/ompl/build/src/ompl/libompl.a")
+
+    if(NOT EXISTS "${OMPL_LIB}")
+        set(OMPL_LIB "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/libompl.a")
+    endif()
+
+else()
+    # Linux - boost and ompl built into /project/ompl/build and /usr/local
+    find_package(Boost REQUIRED COMPONENTS
+        serialization thread filesystem date_time chrono atomic program_options
+        HINTS "/usr/local"
+    )
+    find_package(Eigen3 REQUIRED)
+
+    set(OMPL_LIB "/project/ompl/build/src/ompl/libompl.a")
+endif()
 
 pybind11_add_module(_core src/pyompl/_core.cpp)
 
-add_dependencies(_core ompl_external)
-
 target_include_directories(_core PRIVATE
-    ${OMPL_INCLUDE_DIR}
-    ${OMPL_BUILD_DIR}/src
+    "${CMAKE_SOURCE_DIR}/ompl/src"
+    "${CMAKE_SOURCE_DIR}/ompl/build/src"
     ${Boost_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
 )
 
-target_compile_definitions(_core PRIVATE _USE_MATH_DEFINES)
+target_compile_definitions(_core PRIVATE
+    _USE_MATH_DEFINES
+    BOOST_ALL_NO_LIB
+)
 
 target_link_libraries(_core PRIVATE
     "${OMPL_LIB}"
     ${Boost_LIBRARIES}
 )
 
-if(WIN32)
-    set(VCPKG_INCLUDE "C:/vcpkg/installed/x64-windows/include")
-    set(VCPKG_LIB "C:/vcpkg/installed/x64-windows/lib")
-
-    target_include_directories(_core PRIVATE
-        ${VCPKG_INCLUDE}
-        ${VCPKG_INCLUDE}/eigen3
-    )
-
-    file(GLOB BOOST_LIBS
-        "${VCPKG_LIB}/boost_serialization-*.lib"
-        "${VCPKG_LIB}/boost_thread-*.lib"
-        "${VCPKG_LIB}/boost_filesystem-*.lib"
-        "${VCPKG_LIB}/boost_date_time-*.lib"
-        "${VCPKG_LIB}/boost_chrono-*.lib"
-        "${VCPKG_LIB}/boost_atomic-*.lib"
-        "${VCPKG_LIB}/boost_program_options-*.lib")
-
-    # Override OMPL lib path for Windows
-    set(OMPL_LIB "${OMPL_BUILD_DIR}/src/ompl/Release/ompl.lib")
-    target_link_libraries(_core PRIVATE ${BOOST_LIBS})
-
-elseif(APPLE)
-    target_link_options(_core PRIVATE -mmacosx-version-min=10.15)
+if(APPLE)
+    target_link_options(_core PRIVATE -mmacosx-version-min=11.0)
 endif()
 
 install(TARGETS _core DESTINATION pyompl)
