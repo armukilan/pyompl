@@ -32,14 +32,12 @@ jobs:
 
           CIBW_BEFORE_ALL_LINUX: |
             yum install -y cmake eigen3-devel curl
-            # Build boost in a fixed temp location
             cd /tmp
             curl -L https://archives.boost.io/release/1.80.0/source/boost_1_80_0.tar.gz -o boost.tar.gz
             tar xzf boost.tar.gz
             cd /tmp/boost_1_80_0
-            ./bootstrap.sh --with-libraries=serialization,thread,filesystem,date_time,chrono,atomic,system
+            ./bootstrap.sh --with-libraries=serialization,thread,filesystem,date_time,chrono,atomic,system,program_options
             ./b2 install --prefix=/usr/local -j4
-            # Build OMPL - repo is mounted at /project in manylinux container
             cd /project/ompl
             cmake -B /project/ompl/build -S . \
               -DCMAKE_BUILD_TYPE=Release \
@@ -48,6 +46,7 @@ jobs:
               -DOMPL_BUILD_PYTESTS=OFF \
               -DOMPL_BUILD_PYBINDINGS=OFF \
               -DBUILD_SHARED_LIBS=OFF \
+              -DBoost_ROOT=/usr/local \
               -DBOOST_ROOT=/usr/local
             cmake --build /project/ompl/build --config Release --target ompl -j4
 
