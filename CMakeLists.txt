@@ -26,32 +26,35 @@ if(WIN32)
         ${VCPKG_INCLUDE}/eigen3
     )
 
-    file(GLOB BOOST_LIBS "${VCPKG_LIB}/boost_serialization-*.lib"
-                          "${VCPKG_LIB}/boost_thread-*.lib"
-                          "${VCPKG_LIB}/boost_filesystem-*.lib"
-                          "${VCPKG_LIB}/boost_date_time-*.lib"
-                          "${VCPKG_LIB}/boost_chrono-*.lib"
-                          "${VCPKG_LIB}/boost_atomic-*.lib")
+    file(GLOB BOOST_LIBS
+        "${VCPKG_LIB}/boost_serialization-*.lib"
+        "${VCPKG_LIB}/boost_thread-*.lib"
+        "${VCPKG_LIB}/boost_filesystem-*.lib"
+        "${VCPKG_LIB}/boost_date_time-*.lib"
+        "${VCPKG_LIB}/boost_chrono-*.lib"
+        "${VCPKG_LIB}/boost_atomic-*.lib")
 
     target_link_libraries(_core PRIVATE ${OMPL_LIB_FILE} ${BOOST_LIBS})
 
-elseif(APPLE)
+else()
     set(OMPL_LIB_FILE "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/libompl.a")
 
     find_package(Boost REQUIRED COMPONENTS serialization thread filesystem date_time chrono atomic)
     find_package(Eigen3 REQUIRED)
 
-    target_include_directories(_core PRIVATE ${Boost_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
-    target_link_libraries(_core PRIVATE ${OMPL_LIB_FILE} ${Boost_LIBRARIES})
+    target_include_directories(_core PRIVATE
+        ${Boost_INCLUDE_DIRS}
+        ${EIGEN3_INCLUDE_DIR}
+    )
 
-else() # Linux
-    set(OMPL_LIB_FILE "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/libompl.a")
+    target_link_libraries(_core PRIVATE
+        ${OMPL_LIB_FILE}
+        ${Boost_LIBRARIES}
+    )
 
-    find_package(Boost REQUIRED COMPONENTS serialization thread filesystem date_time chrono atomic)
-    find_package(Eigen3 REQUIRED)
-
-    target_include_directories(_core PRIVATE ${Boost_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
-    target_link_libraries(_core PRIVATE ${OMPL_LIB_FILE} ${Boost_LIBRARIES})
+    if(APPLE)
+        target_link_options(_core PRIVATE -mmacosx-version-min=10.15)
+    endif()
 endif()
 
 install(TARGETS _core DESTINATION pyompl)
