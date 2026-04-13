@@ -48,7 +48,7 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF \
               -DBoost_ROOT=/usr/local \
               -DBOOST_ROOT=/usr/local
-            cmake --build /project/ompl/build --config Release --target ompl -j4
+            cmake --build /project/ompl/build --config Release --target ompl_lib -j4
 
           CIBW_BEFORE_ALL_MACOS: |
             brew install boost eigen cmake
