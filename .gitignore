@@ -1,0 +1,7 @@
+ompl/build/
+__pycache__/
+*.egg-info/
+dist/
+build/
+*.pyd
+*.so
