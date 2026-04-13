@@ -31,6 +31,7 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
 
           CIBW_BEFORE_ALL_LINUX: |
+            set -e
             yum install -y cmake eigen3-devel curl
             cd /tmp
             curl -L https://archives.boost.io/release/1.80.0/source/boost_1_80_0.tar.gz -o boost.tar.gz
@@ -38,6 +39,8 @@ jobs:
             cd /tmp/boost_1_80_0
             ./bootstrap.sh --with-libraries=serialization,thread,filesystem,date_time,chrono,atomic,system,program_options
             ./b2 install --prefix=/usr/local -j4
+            echo "=== Boost installed ==="
+            ls /usr/local/lib/libboost_serialization* || echo "BOOST MISSING"
             cd /project/ompl
             cmake -B /project/ompl/build -S . \
               -DCMAKE_BUILD_TYPE=Release \
@@ -48,7 +51,10 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF \
               -DBoost_ROOT=/usr/local \
               -DBOOST_ROOT=/usr/local
+            echo "=== CMake configure done ==="
             cmake --build /project/ompl/build --config Release --target ompl -j4
+            echo "=== OMPL build done ==="
+            ls /project/ompl/build/src/ompl/libompl.a || echo "LIBOMPL MISSING"
 
           CIBW_BEFORE_ALL_MACOS: |
             brew install boost eigen cmake
