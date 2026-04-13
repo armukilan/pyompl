@@ -19,53 +19,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libboost-all-dev libeigen3-dev cmake
-
-      - name: Install dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install boost eigen cmake
-
-      - name: Install dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git C:/vcpkg
-          C:/vcpkg/bootstrap-vcpkg.bat
-          C:/vcpkg/vcpkg.exe install boost:x64-windows eigen3:x64-windows
-
-      - name: Build OMPL static lib (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          cd ompl
-          cmake -B build -S . \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DOMPL_BUILD_DEMOS=OFF \
-            -DOMPL_BUILD_TESTS=OFF \
-            -DOMPL_BUILD_PYTESTS=OFF \
-            -DOMPL_BUILD_PYBINDINGS=OFF \
-            -DBUILD_SHARED_LIBS=OFF
-          cmake --build build --config Release --target ompl -j4
-
-      - name: Build OMPL static lib (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          cd ompl
-          cmake -B build -S . `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DOMPL_BUILD_DEMOS=OFF `
-            -DOMPL_BUILD_TESTS=OFF `
-            -DOMPL_BUILD_PYTESTS=OFF `
-            -DOMPL_BUILD_PYBINDINGS=OFF `
-            -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
-            -DBUILD_SHARED_LIBS=OFF `
-            -DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES"
-          cmake --build build --config Release --target ompl
-
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
@@ -76,13 +29,39 @@ jobs:
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_BEFORE_BUILD: "pip install pybind11 scikit-build-core"
           CIBW_BUILD_VERBOSITY: 1
-          # Windows - point to vcpkg and ompl lib
-          CIBW_ENVIRONMENT_WINDOWS: >
-            OMPL_LIB=C:/vcpkg/installed/x64-windows/lib
-            VCPKG_ROOT=C:/vcpkg
-          # Linux - standard paths
-          CIBW_ENVIRONMENT_LINUX: >
-            OMPL_LIB=/usr/lib/x86_64-linux-gnu
+
+          CIBW_BEFORE_ALL_LINUX: |
+            apt-get install -y libboost-all-dev libeigen3-dev cmake || \
+            yum install -y boost-devel eigen3-devel cmake
+            cd ompl
+            cmake -B build -S . \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DOMPL_BUILD_DEMOS=OFF \
+              -DOMPL_BUILD_TESTS=OFF \
+              -DOMPL_BUILD_PYTESTS=OFF \
+              -DOMPL_BUILD_PYBINDINGS=OFF \
+              -DBUILD_SHARED_LIBS=OFF
+            cmake --build build --config Release --target ompl -j4
+
+          CIBW_BEFORE_ALL_MACOS: |
+            brew install boost eigen cmake
+            cd ompl
+            cmake -B build -S . \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DOMPL_BUILD_DEMOS=OFF \
+              -DOMPL_BUILD_TESTS=OFF \
+              -DOMPL_BUILD_PYTESTS=OFF \
+              -DOMPL_BUILD_PYBINDINGS=OFF \
+              -DBUILD_SHARED_LIBS=OFF
+            cmake --build build --config Release --target ompl -j4
+
+          CIBW_BEFORE_ALL_WINDOWS: |
+            git clone https://github.com/microsoft/vcpkg.git C:/vcpkg
+            C:/vcpkg/bootstrap-vcpkg.bat
+            C:/vcpkg/vcpkg.exe install boost:x64-windows eigen3:x64-windows
+            cd ompl
+            cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DOMPL_BUILD_DEMOS=OFF -DOMPL_BUILD_TESTS=OFF -DOMPL_BUILD_PYTESTS=OFF -DOMPL_BUILD_PYBINDINGS=OFF -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES"
+            cmake --build build --config Release --target ompl
 
       - uses: actions/upload-artifact@v4
         with:
