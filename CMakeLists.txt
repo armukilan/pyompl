@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(pyompl)
 
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
+
 find_package(pybind11 CONFIG REQUIRED)
 
 set(OMPL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ompl/src")
