@@ -6,37 +6,52 @@ find_package(pybind11 CONFIG REQUIRED)
 
 set(OMPL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ompl/src")
 set(OMPL_BUILD_INCLUDE "${CMAKE_SOURCE_DIR}/ompl/build/src")
-set(VCPKG_INCLUDE_DIR "C:/Users/mukil/dev/vcpkg/installed/x64-windows/include")
-set(OMPL_LIB "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/Release/ompl.lib")
-set(VCPKG_LIB_DIR "C:/Users/mukil/dev/vcpkg/installed/x64-windows/lib")
 
 pybind11_add_module(_core src/pyompl/_core.cpp)
 
 target_include_directories(_core PRIVATE
     ${OMPL_INCLUDE_DIR}
     ${OMPL_BUILD_INCLUDE}
-    ${VCPKG_INCLUDE_DIR}
-    ${VCPKG_INCLUDE_DIR}/eigen3
 )
 
-target_compile_definitions(_core PRIVATE
-    _USE_MATH_DEFINES
-    BOOST_ALL_NO_LIB
-    BOOST_SERIALIZATION_DYN_LINK
-    BOOST_THREAD_DYN_LINK
-    BOOST_ATOMIC_DYN_LINK
-    BOOST_CHRONO_DYN_LINK
-    BOOST_DATE_TIME_DYN_LINK
-)
+target_compile_definitions(_core PRIVATE _USE_MATH_DEFINES)
 
-target_link_libraries(_core PRIVATE
-    ${OMPL_LIB}
-    ${VCPKG_LIB_DIR}/boost_serialization-vc145-mt-x64-1_90.lib
-    ${VCPKG_LIB_DIR}/boost_thread-vc145-mt-x64-1_90.lib
-    ${VCPKG_LIB_DIR}/boost_filesystem-vc145-mt-x64-1_90.lib
-    ${VCPKG_LIB_DIR}/boost_date_time-vc145-mt-x64-1_90.lib
-    ${VCPKG_LIB_DIR}/boost_chrono-vc145-mt-x64-1_90.lib
-    ${VCPKG_LIB_DIR}/boost_atomic-vc145-mt-x64-1_90.lib
-)
+if(WIN32)
+    set(VCPKG_INCLUDE "C:/vcpkg/installed/x64-windows/include")
+    set(VCPKG_LIB "C:/vcpkg/installed/x64-windows/lib")
+    set(OMPL_LIB_FILE "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/Release/ompl.lib")
+
+    target_include_directories(_core PRIVATE
+        ${VCPKG_INCLUDE}
+        ${VCPKG_INCLUDE}/eigen3
+    )
+
+    file(GLOB BOOST_LIBS "${VCPKG_LIB}/boost_serialization-*.lib"
+                          "${VCPKG_LIB}/boost_thread-*.lib"
+                          "${VCPKG_LIB}/boost_filesystem-*.lib"
+                          "${VCPKG_LIB}/boost_date_time-*.lib"
+                          "${VCPKG_LIB}/boost_chrono-*.lib"
+                          "${VCPKG_LIB}/boost_atomic-*.lib")
+
+    target_link_libraries(_core PRIVATE ${OMPL_LIB_FILE} ${BOOST_LIBS})
+
+elseif(APPLE)
+    set(OMPL_LIB_FILE "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/libompl.a")
+
+    find_package(Boost REQUIRED COMPONENTS serialization thread filesystem date_time chrono atomic)
+    find_package(Eigen3 REQUIRED)
+
+    target_include_directories(_core PRIVATE ${Boost_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
+    target_link_libraries(_core PRIVATE ${OMPL_LIB_FILE} ${Boost_LIBRARIES})
+
+else() # Linux
+    set(OMPL_LIB_FILE "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/libompl.a")
+
+    find_package(Boost REQUIRED COMPONENTS serialization thread filesystem date_time chrono atomic)
+    find_package(Eigen3 REQUIRED)
+
+    target_include_directories(_core PRIVATE ${Boost_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
+    target_link_libraries(_core PRIVATE ${OMPL_LIB_FILE} ${Boost_LIBRARIES})
+endif()
 
 install(TARGETS _core DESTINATION pyompl)
