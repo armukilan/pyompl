@@ -17,9 +17,16 @@ target_include_directories(_core PRIVATE
 target_compile_definitions(_core PRIVATE _USE_MATH_DEFINES)
 
 if(WIN32)
+    # Use GITHUB_WORKSPACE if set (CI), otherwise use local path
+    if(DEFINED ENV{GITHUB_WORKSPACE})
+        set(OMPL_BASE "$ENV{GITHUB_WORKSPACE}")
+    else()
+        set(OMPL_BASE "${CMAKE_SOURCE_DIR}")
+    endif()
+
     set(VCPKG_INCLUDE "C:/vcpkg/installed/x64-windows/include")
     set(VCPKG_LIB "C:/vcpkg/installed/x64-windows/lib")
-    set(OMPL_LIB_FILE "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/Release/ompl.lib")
+    set(OMPL_LIB_FILE "${OMPL_BASE}/ompl/build/src/ompl/Release/ompl.lib")
 
     target_include_directories(_core PRIVATE
         ${VCPKG_INCLUDE}
@@ -37,7 +44,14 @@ if(WIN32)
     target_link_libraries(_core PRIVATE ${OMPL_LIB_FILE} ${BOOST_LIBS})
 
 else()
-    set(OMPL_LIB_FILE "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/libompl.a")
+    # Use GITHUB_WORKSPACE if set (CI), otherwise use local path
+    if(DEFINED ENV{GITHUB_WORKSPACE})
+        set(OMPL_BASE "$ENV{GITHUB_WORKSPACE}")
+    else()
+        set(OMPL_BASE "${CMAKE_SOURCE_DIR}")
+    endif()
+
+    set(OMPL_LIB_FILE "${OMPL_BASE}/ompl/build/src/ompl/libompl.a")
 
     find_package(Boost REQUIRED COMPONENTS serialization thread filesystem date_time chrono atomic)
     find_package(Eigen3 REQUIRED)
@@ -55,6 +69,7 @@ else()
     if(APPLE)
         target_link_options(_core PRIVATE -mmacosx-version-min=10.15)
     endif()
+
 endif()
 
 install(TARGETS _core DESTINATION pyompl)

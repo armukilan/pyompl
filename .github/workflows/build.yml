@@ -31,18 +31,15 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
 
           CIBW_BEFORE_ALL_LINUX: |
-            # Install newer boost via source - apt boost is too old (1.53)
-            yum install -y cmake eigen3-devel || true
-            apt-get install -y cmake libeigen3-dev || true
-            # Install boost 1.80 from source
-            curl -L https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz | tar xz
+            yum install -y cmake eigen3-devel curl
+            # Download boost from official source
+            curl -L https://archives.boost.io/release/1.80.0/source/boost_1_80_0.tar.gz -o boost.tar.gz
+            tar xzf boost.tar.gz
             cd boost_1_80_0
             ./bootstrap.sh --with-libraries=serialization,thread,filesystem,date_time,chrono,atomic,system
             ./b2 install --prefix=/usr/local -j4
-            cd ..
-            # Build OMPL
-            cd ompl
-            cmake -B build -S . \
+            cd $GITHUB_WORKSPACE/ompl
+            cmake -B $GITHUB_WORKSPACE/ompl/build -S . \
               -DCMAKE_BUILD_TYPE=Release \
               -DOMPL_BUILD_DEMOS=OFF \
               -DOMPL_BUILD_TESTS=OFF \
@@ -50,12 +47,12 @@ jobs:
               -DOMPL_BUILD_PYBINDINGS=OFF \
               -DBUILD_SHARED_LIBS=OFF \
               -DBOOST_ROOT=/usr/local
-            cmake --build build --config Release --target ompl -j4
+            cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl -j4
 
           CIBW_BEFORE_ALL_MACOS: |
             brew install boost eigen cmake
-            cd ompl
-            cmake -B build -S . \
+            cd $GITHUB_WORKSPACE/ompl
+            cmake -B $GITHUB_WORKSPACE/ompl/build -S . \
               -DCMAKE_BUILD_TYPE=Release \
               -DOMPL_BUILD_DEMOS=OFF \
               -DOMPL_BUILD_TESTS=OFF \
@@ -63,13 +60,12 @@ jobs:
               -DOMPL_BUILD_PYBINDINGS=OFF \
               -DBUILD_SHARED_LIBS=OFF \
               -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
-            cmake --build build --config Release --target ompl -j4
+            cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl -j4
 
           CIBW_BEFORE_ALL_WINDOWS: |
             C:/vcpkg/vcpkg.exe install boost:x64-windows eigen3:x64-windows
-            cd ompl
-            cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DOMPL_BUILD_DEMOS=OFF -DOMPL_BUILD_TESTS=OFF -DOMPL_BUILD_PYTESTS=OFF -DOMPL_BUILD_PYBINDINGS=OFF -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES"
-            cmake --build build --config Release --target ompl
+            cmake -B "$env:GITHUB_WORKSPACE/ompl/build" -S "$env:GITHUB_WORKSPACE/ompl" -DCMAKE_BUILD_TYPE=Release -DOMPL_BUILD_DEMOS=OFF -DOMPL_BUILD_TESTS=OFF -DOMPL_BUILD_PYTESTS=OFF -DOMPL_BUILD_PYBINDINGS=OFF -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES"
+            cmake --build "$env:GITHUB_WORKSPACE/ompl/build" --config Release --target ompl
 
       - uses: actions/upload-artifact@v4
         with:
