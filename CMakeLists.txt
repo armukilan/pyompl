@@ -52,7 +52,12 @@ elseif(APPLE)
     )
     message(STATUS "Found OMPL headers: ${OMPL_HEADERS}")
 
-    set(OMPL_EXTRA_INCLUDES "${OMPL_HEADERS}")
+    set(OMPL_EXTRA_INCLUDES
+        "${OMPL_HEADERS}"
+        "/opt/homebrew/include/eigen3"
+        "/usr/local/include/eigen3"
+        ${EIGEN3_INCLUDE_DIR}
+    )
     set(OMPL_EXTRA_LIBS "")
     set(OMPL_EXTRA_DEFINES "")
 
