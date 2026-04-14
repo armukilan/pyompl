@@ -38,9 +38,9 @@ elseif(APPLE)
     )
     find_package(Eigen3 REQUIRED)
 
-    set(OMPL_LIB "$ENV{GITHUB_WORKSPACE}/ompl/build/src/ompl/libompl.a")
+    set(OMPL_LIB "$ENV{GITHUB_WORKSPACE}/ompl/build/src/ompl/libompl.dylib")
     if(NOT EXISTS "${OMPL_LIB}")
-        set(OMPL_LIB "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/libompl.a")
+        set(OMPL_LIB "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/libompl.dylib")
     endif()
 
     set(OMPL_EXTRA_INCLUDES "")
@@ -93,6 +93,10 @@ target_link_libraries(_core PRIVATE
 
 if(APPLE)
     target_link_options(_core PRIVATE -mmacosx-version-min=11.0)
+    set_target_properties(_core PROPERTIES
+        BUILD_RPATH "$ENV{GITHUB_WORKSPACE}/ompl/build/src/ompl"
+        INSTALL_RPATH "@loader_path"
+    )
 endif()
 
 if(UNIX AND NOT APPLE)

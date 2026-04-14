@@ -43,9 +43,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DOMPL_BUILD_DEMOS=OFF \
             -DOMPL_BUILD_TESTS=OFF \
-            -DOMPL_BUILD_PYTESTS=OFF \
-            -DOMPL_BUILD_PYBINDINGS=OFF \
-            -DBUILD_SHARED_LIBS=OFF \
+            -DOMPL_BUILD_SHARED=OFF \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
           cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl -j4
           echo "=== Finding all ompl lib files ==="
