@@ -15,6 +15,12 @@ if(WIN32)
         HINTS "C:/vcpkg/installed/x64-windows"
     )
     find_package(Eigen3 REQUIRED HINTS "C:/vcpkg/installed/x64-windows")
+
+    # FLANN (required for OMPL_BUILD_VAMP=ON)
+    find_package(flann CONFIG REQUIRED
+        HINTS "C:/vcpkg/installed/x64-windows"
+    )
+
     set(OMPL_LIB "$ENV{GITHUB_WORKSPACE}/ompl/build/src/ompl/Release/ompl.lib")
     if(NOT EXISTS "${OMPL_LIB}")
         set(OMPL_LIB "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/Release/ompl.lib")
@@ -23,7 +29,7 @@ if(WIN32)
         "C:/vcpkg/installed/x64-windows/include"
         "C:/vcpkg/installed/x64-windows/include/eigen3"
     )
-    set(OMPL_EXTRA_LIBS "")
+    set(OMPL_EXTRA_LIBS flann::flann)
     set(OMPL_EXTRA_DEFINES BOOST_ALL_NO_LIB)
 
 elseif(APPLE)
@@ -31,6 +37,15 @@ elseif(APPLE)
         serialization thread filesystem date_time chrono atomic program_options
     )
     find_package(Eigen3 REQUIRED)
+
+    # FLANN (required for OMPL_BUILD_VAMP=ON)
+    find_package(flann CONFIG REQUIRED
+        HINTS
+            "/opt/homebrew"
+            "/opt/homebrew/lib/cmake"
+            "/usr/local"
+            "/usr/local/lib/cmake"
+    )
 
     # OMPL 2.0.0 is built from source and installed to /usr/local
     find_library(OMPL_LIB ompl
@@ -41,7 +56,6 @@ elseif(APPLE)
     )
     message(STATUS "Found OMPL lib: ${OMPL_LIB}")
 
-    # OMPL 2.0.0 installs headers flat (no ompl-X.Y subdirectory)
     # OMPL 2.0.0 installs headers in ompl-2.0 subdirectory
     find_path(OMPL_HEADERS ompl/base/SpaceInformation.h
         HINTS
@@ -59,18 +73,24 @@ elseif(APPLE)
         "/usr/local/include/eigen3"
         ${EIGEN3_INCLUDE_DIR}
     )
-    set(OMPL_EXTRA_LIBS "")
+    set(OMPL_EXTRA_LIBS flann::flann)
     set(OMPL_EXTRA_DEFINES "")
 
 else()
+    # Linux
     find_package(Boost REQUIRED COMPONENTS
         serialization thread filesystem date_time chrono atomic program_options
         HINTS "/usr/local"
     )
     find_package(Eigen3 REQUIRED)
+
+    # FLANN (required for OMPL_BUILD_VAMP=ON)
+    # Installed via: dnf install flann-devel
+    find_package(flann REQUIRED)
+
     set(OMPL_LIB "/project/ompl/build/src/ompl/libompl.so")
     set(OMPL_EXTRA_INCLUDES "")
-    set(OMPL_EXTRA_LIBS "")
+    set(OMPL_EXTRA_LIBS flann::flann)
     set(OMPL_EXTRA_DEFINES "")
 endif()
 
