@@ -38,12 +38,27 @@ elseif(APPLE)
     )
     find_package(Eigen3 REQUIRED)
 
-    set(OMPL_LIB "$ENV{GITHUB_WORKSPACE}/ompl/build/src/ompl/libompl.dylib")
-    if(NOT EXISTS "${OMPL_LIB}")
-        set(OMPL_LIB "${CMAKE_SOURCE_DIR}/ompl/build/src/ompl/libompl.dylib")
+    # Try homebrew OMPL first, then fall back to built from source
+    find_library(OMPL_LIB ompl
+        HINTS
+            "/opt/homebrew/lib"
+            "/usr/local/lib"
+    )
+
+    if(NOT OMPL_LIB)
+        message(FATAL_ERROR "Could not find libompl. Install via: brew install ompl")
     endif()
 
-    set(OMPL_EXTRA_INCLUDES "")
+    message(STATUS "Found OMPL: ${OMPL_LIB}")
+
+    # Find OMPL headers from homebrew
+    find_path(OMPL_INCLUDE_DIRS ompl/base/SpaceInformation.h
+        HINTS
+            "/opt/homebrew/include"
+            "/usr/local/include"
+    )
+
+    set(OMPL_EXTRA_INCLUDES "${OMPL_INCLUDE_DIRS}")
     set(OMPL_EXTRA_LIBS "")
     set(OMPL_EXTRA_DEFINES "")
 

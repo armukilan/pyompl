@@ -22,7 +22,10 @@ jobs:
       - name: Install dependencies on Mac
         if: runner.os == 'macOS'
         run: |
-          brew install boost eigen cmake
+          brew install boost eigen cmake ompl
+          echo "=== OMPL installed via brew ==="
+          find /opt/homebrew -name "libompl*" | head -10
+          find /usr/local -name "libompl*" | head -10
 
       - name: Install dependencies on Windows
         if: runner.os == 'Windows'
@@ -35,55 +38,6 @@ jobs:
           C:/vcpkg/bootstrap-vcpkg.bat
           C:/vcpkg/vcpkg install boost:x64-windows eigen3:x64-windows
 
-      # - name: Build OMPL on Mac
-      #   if: runner.os == 'macOS'
-      #   run: |
-      #     cd $GITHUB_WORKSPACE/ompl
-      #     cmake -B $GITHUB_WORKSPACE/ompl/build -S . \
-      #       -DCMAKE_BUILD_TYPE=Release \
-      #       -DOMPL_BUILD_DEMOS=OFF \
-      #       -DOMPL_BUILD_TESTS=OFF \
-      #       -DOMPL_BUILD_SHARED=OFF \
-      #       -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
-      #     cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl -j4
-      #     echo "=== Finding all ompl lib files ==="
-      #     find $GITHUB_WORKSPACE/ompl/build -name "libompl*" | head -20
-
-      # - name: Build OMPL on Mac
-      #   if: runner.os == 'macOS'
-      #   run: |
-      #     cd $GITHUB_WORKSPACE/ompl
-      #     cmake -B $GITHUB_WORKSPACE/ompl/build -S . \
-      #       -DCMAKE_BUILD_TYPE=Release \
-      #       -DOMPL_BUILD_DEMOS=OFF \
-      #       -DOMPL_BUILD_TESTS=OFF \
-      #       -DOMPL_BUILD_SHARED=OFF \
-      #       -DOMPL_BUILD_VAMP=OFF \
-      #       -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
-      #     cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl -j2 || true
-      #     echo "=== Finding all ompl lib files ==="
-      #     find $GITHUB_WORKSPACE/ompl/build -name "libompl*" | head -20
-      #     echo "=== Build src contents ==="
-      #     ls $GITHUB_WORKSPACE/ompl/build/src/ompl/ || echo "DIR NOT FOUND"
-
-      - name: Build OMPL on Mac
-        if: runner.os == 'macOS'
-        run: |
-          cd $GITHUB_WORKSPACE/ompl
-          cmake -B $GITHUB_WORKSPACE/ompl/build -S . \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DOMPL_BUILD_DEMOS=OFF \
-            -DOMPL_BUILD_TESTS=OFF \
-            -DOMPL_BUILD_SHARED=OFF \
-            -DOMPL_BUILD_VAMP=OFF \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
-          echo "=== Available targets ==="
-          cmake --build $GITHUB_WORKSPACE/ompl/build --target help 2>&1 | head -30
-          echo "=== Building all ==="
-          cmake --build $GITHUB_WORKSPACE/ompl/build --config Release -j2 2>&1 | tail -20
-          echo "=== Finding all ompl lib files ==="
-          find $GITHUB_WORKSPACE/ompl/build -name "libompl*" | head -20
-
       - name: Build OMPL on Windows
         if: runner.os == 'Windows'
         shell: pwsh
@@ -92,10 +46,9 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release `
             -DOMPL_BUILD_DEMOS=OFF `
             -DOMPL_BUILD_TESTS=OFF `
-            -DOMPL_BUILD_PYTESTS=OFF `
-            -DOMPL_BUILD_PYBINDINGS=OFF `
+            -DOMPL_BUILD_SHARED=OFF `
+            -DOMPL_BUILD_VAMP=OFF `
             -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
-            -DBUILD_SHARED_LIBS=OFF `
             -DCMAKE_CXX_FLAGS="/D_USE_MATH_DEFINES"
           cmake --build "$env:GITHUB_WORKSPACE/ompl/build" --config Release --target ompl
 
@@ -108,10 +61,8 @@ jobs:
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_BUILD_VERBOSITY: 1
 
-          # Use modern manylinux with dnf and new enough glibc
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_34_x86_64
 
-          # Linux: install deps + build boost from source + build OMPL
           CIBW_BEFORE_ALL_LINUX: |
             dnf install -y cmake eigen3-devel curl gcc-c++ make
             cd /tmp
@@ -125,8 +76,8 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DOMPL_BUILD_DEMOS=OFF \
               -DOMPL_BUILD_TESTS=OFF \
-              -DOMPL_BUILD_PYTESTS=OFF \
-              -DOMPL_BUILD_PYBINDINGS=OFF \
+              -DOMPL_BUILD_SHARED=OFF \
+              -DOMPL_BUILD_VAMP=OFF \
               -DBOOST_ROOT=/usr/local \
               -DBoost_ROOT=/usr/local
             cmake --build /project/ompl/build --config Release --target ompl -j4
@@ -138,11 +89,10 @@ jobs:
           CIBW_ENVIRONMENT_WINDOWS: >-
             CMAKE_PREFIX_PATH="C:/vcpkg/installed/x64-windows"
             CMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            GITHUB_WORKSPACE="$env:GITHUB_WORKSPACE"
+            GITHUB_WORKSPACE=$env:GITHUB_WORKSPACE
 
           CIBW_ENVIRONMENT_MACOS: >-
             MACOSX_DEPLOYMENT_TARGET=11.0
-            GITHUB_WORKSPACE=$GITHUB_WORKSPACE
 
       - uses: actions/upload-artifact@v4
         with:
