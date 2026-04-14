@@ -48,6 +48,8 @@ jobs:
             -DBUILD_SHARED_LIBS=OFF \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
           cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl -j4
+          echo "=== Finding all ompl lib files ==="
+          find $GITHUB_WORKSPACE/ompl/build -name "libompl*" | head -20
 
       - name: Build OMPL on Windows
         if: runner.os == 'Windows'
