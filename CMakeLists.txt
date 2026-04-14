@@ -16,10 +16,8 @@ if(WIN32)
     )
     find_package(Eigen3 REQUIRED HINTS "C:/vcpkg/installed/x64-windows")
 
-    # FLANN (required for OMPL_BUILD_VAMP=ON)
-    find_package(flann CONFIG REQUIRED
-        HINTS "C:/vcpkg/installed/x64-windows"
-    )
+    # VAMP is not supported on Windows AMD64 (rejected by VampConfig.cmake),
+    # so FLANN is not needed. Build OMPL with OMPL_BUILD_VAMP=OFF on Windows.
 
     set(OMPL_LIB "$ENV{GITHUB_WORKSPACE}/ompl/build/src/ompl/Release/ompl.lib")
     if(NOT EXISTS "${OMPL_LIB}")
@@ -29,7 +27,7 @@ if(WIN32)
         "C:/vcpkg/installed/x64-windows/include"
         "C:/vcpkg/installed/x64-windows/include/eigen3"
     )
-    set(OMPL_EXTRA_LIBS flann::flann)
+    set(OMPL_EXTRA_LIBS "")
     set(OMPL_EXTRA_DEFINES BOOST_ALL_NO_LIB)
 
 elseif(APPLE)
