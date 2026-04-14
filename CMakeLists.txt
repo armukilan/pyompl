@@ -32,24 +32,20 @@ elseif(APPLE)
     )
     find_package(Eigen3 REQUIRED)
 
-    # Use homebrew prebuilt OMPL - no source build needed
+    # OMPL 2.0.0 is built from source and installed to /usr/local
     find_library(OMPL_LIB ompl
         HINTS
-            "/opt/homebrew/lib"
             "/usr/local/lib"
+            "/opt/homebrew/lib"
         REQUIRED
     )
     message(STATUS "Found OMPL lib: ${OMPL_LIB}")
 
-    # Find OMPL headers - homebrew installs to include/ompl-X.Y/
+    # OMPL 2.0.0 installs headers flat (no ompl-X.Y subdirectory)
     find_path(OMPL_HEADERS ompl/base/SpaceInformation.h
         HINTS
-            "/opt/homebrew/include/ompl-1.7"
-            "/opt/homebrew/include/ompl-1.6"
-            "/opt/homebrew/include"
-            "/usr/local/include/ompl-1.7"
-            "/usr/local/include/ompl-1.6"
             "/usr/local/include"
+            "/opt/homebrew/include"
         REQUIRED
     )
     message(STATUS "Found OMPL headers: ${OMPL_HEADERS}")

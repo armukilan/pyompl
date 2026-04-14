@@ -19,21 +19,26 @@ jobs:
         with:
           submodules: recursive
 
+      # Pin OMPL submodule to 2.0.0 on all OSes
+      - name: Pin OMPL submodule to 2.0.0
+        run: |
+          cd ompl
+          git fetch --tags
+          git checkout 2.0.0
+
       - name: Install dependencies on Mac
         if: runner.os == 'macOS'
         run: |
-          brew install boost eigen cmake ompl
-
-      # - name: Install dependencies on Windows
-      #   if: runner.os == 'Windows'
-      #   shell: pwsh
-      #   run: |
-      #     if (Test-Path "C:/vcpkg") {
-      #       Remove-Item -Recurse -Force "C:/vcpkg"
-      #     }
-      #     git clone https://github.com/microsoft/vcpkg C:/vcpkg
-      #     C:/vcpkg/bootstrap-vcpkg.bat
-      #     C:/vcpkg/vcpkg install boost:x64-windows eigen3:x64-windows
+          brew install boost eigen cmake
+          cmake -B $GITHUB_WORKSPACE/ompl/build -S $GITHUB_WORKSPACE/ompl \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DOMPL_BUILD_DEMOS=OFF \
+            -DOMPL_BUILD_TESTS=OFF \
+            -DOMPL_BUILD_PYTESTS=OFF \
+            -DOMPL_BUILD_PYBINDINGS=OFF \
+            -DOMPL_BUILD_VAMP=OFF
+          cmake --build $GITHUB_WORKSPACE/ompl/build --target ompl -j4
+          sudo cmake --install $GITHUB_WORKSPACE/ompl/build
 
       - name: Install dependencies on Windows
         if: runner.os == 'Windows'
@@ -78,7 +83,7 @@ jobs:
           # Use modern manylinux with dnf and new enough glibc
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_34_x86_64
 
-          # Linux: install deps + build boost from source + build OMPL
+          # Linux: install deps + build boost from source + build OMPL 2.0.0 from submodule
           CIBW_BEFORE_ALL_LINUX: |
             dnf install -y cmake eigen3-devel curl gcc-c++ make
             cd /tmp
@@ -88,16 +93,19 @@ jobs:
             ./bootstrap.sh --with-libraries=serialization,thread,filesystem,date_time,chrono,atomic,system,program_options
             ./b2 install --prefix=/usr/local -j4
             cd /project/ompl
+            git fetch --tags
+            git checkout 2.0.0
             cmake -B /project/ompl/build -S . \
               -DCMAKE_BUILD_TYPE=Release \
               -DOMPL_BUILD_DEMOS=OFF \
               -DOMPL_BUILD_TESTS=OFF \
               -DOMPL_BUILD_PYTESTS=OFF \
               -DOMPL_BUILD_PYBINDINGS=OFF \
+              -DOMPL_BUILD_VAMP=OFF \
               -DBOOST_ROOT=/usr/local \
               -DBoost_ROOT=/usr/local
             cmake --build /project/ompl/build --config Release --target ompl -j4
-            echo "=== OMPL built ==="
+            echo "=== OMPL 2.0.0 built ==="
             ls /project/ompl/build/src/ompl/libompl.so
 
           CIBW_BEFORE_BUILD: "pip install pybind11 scikit-build-core"

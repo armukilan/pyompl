@@ -4,8 +4,34 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pyompl"
-version = "0.0.31"
+version = "0.0.32"
+description = "Python bindings for the Open Motion Planning Library (OMPL)"
 requires-python = ">=3.10"
+readme = "README.md"
+authors = [
+    {name = "Mukilan", email = "mukilanar998@gmail.com"}
+]
+keywords = ["OMPL", "robotics", "motion planning", "pybind11", "motion planning library", "path-planning"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Robotics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
+    "Operating System :: OS Independent"
+    "License :: OSI Approved :: GNU Affero General Public License v3"
+]
+
+[project.urls]
+Homepage = "https://github.com/armukilan/pyompl"
+Repository = "https://github.com/armukilan/pyompl"
+Issues = "https://github.com/armukilan/pyompl/issues"
 
 [tool.scikit-build]
 cmake.build-type = "Release"
