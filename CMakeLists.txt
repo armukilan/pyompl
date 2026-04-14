@@ -86,7 +86,28 @@ else()
 
     # FLANN (required for OMPL_BUILD_VAMP=ON)
     # Installed via: dnf install flann-devel
-    find_package(flann REQUIRED)
+    # manylinux flann-devel does not ship a CMake config file, so we locate
+    # the library and headers manually and create an imported target ourselves.
+    find_library(FLANN_LIBRARY
+        NAMES flann_cpp flann
+        HINTS /usr/local/lib /usr/lib /usr/lib64
+        REQUIRED
+    )
+    find_path(FLANN_INCLUDE_DIR
+        NAMES flann/flann.hpp
+        HINTS /usr/local/include /usr/include
+        REQUIRED
+    )
+    message(STATUS "Found FLANN lib:     ${FLANN_LIBRARY}")
+    message(STATUS "Found FLANN headers: ${FLANN_INCLUDE_DIR}")
+
+    if(NOT TARGET flann::flann)
+        add_library(flann::flann UNKNOWN IMPORTED)
+        set_target_properties(flann::flann PROPERTIES
+            IMPORTED_LOCATION "${FLANN_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${FLANN_INCLUDE_DIR}"
+        )
+    endif()
 
     set(OMPL_LIB "/project/ompl/build/src/ompl/libompl.so")
     set(OMPL_EXTRA_INCLUDES "")
