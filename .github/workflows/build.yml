@@ -24,6 +24,17 @@ jobs:
         run: |
           brew install boost eigen cmake ompl
 
+      # - name: Install dependencies on Windows
+      #   if: runner.os == 'Windows'
+      #   shell: pwsh
+      #   run: |
+      #     if (Test-Path "C:/vcpkg") {
+      #       Remove-Item -Recurse -Force "C:/vcpkg"
+      #     }
+      #     git clone https://github.com/microsoft/vcpkg C:/vcpkg
+      #     C:/vcpkg/bootstrap-vcpkg.bat
+      #     C:/vcpkg/vcpkg install boost:x64-windows eigen3:x64-windows
+
       - name: Install dependencies on Windows
         if: runner.os == 'Windows'
         shell: pwsh
@@ -34,24 +45,10 @@ jobs:
           git clone https://github.com/microsoft/vcpkg C:/vcpkg
           C:/vcpkg/bootstrap-vcpkg.bat
           C:/vcpkg/vcpkg install boost:x64-windows eigen3:x64-windows
-
-      # - name: Build OMPL on Mac
-      #   if: runner.os == 'macOS'
-      #   run: |
-      #     cd $GITHUB_WORKSPACE/ompl
-      #     cmake -B $GITHUB_WORKSPACE/ompl/build -S . \
-      #       -DCMAKE_BUILD_TYPE=Release \
-      #       -DOMPL_BUILD_DEMOS=OFF \
-      #       -DOMPL_BUILD_TESTS=OFF \
-      #       -DOMPL_BUILD_SHARED=OFF \
-      #       -DOMPL_BUILD_VAMP=OFF \
-      #       -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
-      #     echo "=== Available targets ==="
-      #     cmake --build $GITHUB_WORKSPACE/ompl/build --target help 2>&1 | head -30
-      #     echo "=== Building all ==="
-      #     cmake --build $GITHUB_WORKSPACE/ompl/build --config Release -j2 2>&1 | tail -20
-      #     echo "=== Finding all ompl lib files ==="
-      #     find $GITHUB_WORKSPACE/ompl/build -name "libompl*" | head -20
+          # Remove vcpkg python wrapper that hijacks find_package(Python)
+          if (Test-Path "C:/vcpkg/installed/x64-windows/share/python") {
+            Remove-Item -Recurse -Force "C:/vcpkg/installed/x64-windows/share/python"
+          }
 
       - name: Build OMPL on Windows
         if: runner.os == 'Windows'
