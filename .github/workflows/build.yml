@@ -49,6 +49,23 @@ jobs:
       #     echo "=== Finding all ompl lib files ==="
       #     find $GITHUB_WORKSPACE/ompl/build -name "libompl*" | head -20
 
+      # - name: Build OMPL on Mac
+      #   if: runner.os == 'macOS'
+      #   run: |
+      #     cd $GITHUB_WORKSPACE/ompl
+      #     cmake -B $GITHUB_WORKSPACE/ompl/build -S . \
+      #       -DCMAKE_BUILD_TYPE=Release \
+      #       -DOMPL_BUILD_DEMOS=OFF \
+      #       -DOMPL_BUILD_TESTS=OFF \
+      #       -DOMPL_BUILD_SHARED=OFF \
+      #       -DOMPL_BUILD_VAMP=OFF \
+      #       -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+      #     cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl -j2 || true
+      #     echo "=== Finding all ompl lib files ==="
+      #     find $GITHUB_WORKSPACE/ompl/build -name "libompl*" | head -20
+      #     echo "=== Build src contents ==="
+      #     ls $GITHUB_WORKSPACE/ompl/build/src/ompl/ || echo "DIR NOT FOUND"
+
       - name: Build OMPL on Mac
         if: runner.os == 'macOS'
         run: |
@@ -60,11 +77,12 @@ jobs:
             -DOMPL_BUILD_SHARED=OFF \
             -DOMPL_BUILD_VAMP=OFF \
             -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
-          cmake --build $GITHUB_WORKSPACE/ompl/build --config Release --target ompl -j2 || true
+          echo "=== Available targets ==="
+          cmake --build $GITHUB_WORKSPACE/ompl/build --target help 2>&1 | head -30
+          echo "=== Building all ==="
+          cmake --build $GITHUB_WORKSPACE/ompl/build --config Release -j2 2>&1 | tail -20
           echo "=== Finding all ompl lib files ==="
           find $GITHUB_WORKSPACE/ompl/build -name "libompl*" | head -20
-          echo "=== Build src contents ==="
-          ls $GITHUB_WORKSPACE/ompl/build/src/ompl/ || echo "DIR NOT FOUND"
 
       - name: Build OMPL on Windows
         if: runner.os == 'Windows'
