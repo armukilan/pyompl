@@ -26,6 +26,19 @@ jobs:
           git fetch --tags
           git checkout 2.0.0
 
+      # - name: Install dependencies on Mac
+      #   if: runner.os == 'macOS'
+      #   run: |
+      #     brew install boost eigen cmake
+      #     cmake -B $GITHUB_WORKSPACE/ompl/build -S $GITHUB_WORKSPACE/ompl \
+      #       -DCMAKE_BUILD_TYPE=Release \
+      #       -DOMPL_BUILD_DEMOS=OFF \
+      #       -DOMPL_BUILD_TESTS=OFF \
+      #       -DOMPL_BUILD_PYTESTS=OFF \
+      #       -DOMPL_BUILD_PYBINDINGS=OFF \
+      #       -DOMPL_BUILD_VAMP=OFF
+      #     cmake --build $GITHUB_WORKSPACE/ompl/build --target ompl -j4
+      #     sudo cmake --install $GITHUB_WORKSPACE/ompl/build
       - name: Install dependencies on Mac
         if: runner.os == 'macOS'
         run: |
@@ -38,7 +51,8 @@ jobs:
             -DOMPL_BUILD_PYBINDINGS=OFF \
             -DOMPL_BUILD_VAMP=OFF
           cmake --build $GITHUB_WORKSPACE/ompl/build --target ompl -j4
-          sudo cmake --install $GITHUB_WORKSPACE/ompl/build
+          # Install only the ompl component, not py-bindings
+          sudo cmake --install $GITHUB_WORKSPACE/ompl/build --component ompl
 
       - name: Install dependencies on Windows
         if: runner.os == 'Windows'
