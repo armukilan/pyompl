@@ -41,7 +41,12 @@ else()
     )
     find_package(Eigen3 REQUIRED)
 
-    set(OMPL_LIB "/project/ompl/build/src/ompl/libompl.a")
+    set(OMPL_LIB "/project/ompl/build/src/ompl/libompl.so")
+    set(OMPL_RPATH "/project/ompl/build/src/ompl")
+    set_target_properties(_core PROPERTIES
+        BUILD_RPATH "${OMPL_RPATH}"
+        INSTALL_RPATH "${OMPL_RPATH}"
+    )
 endif()
 
 pybind11_add_module(_core src/pyompl/_core.cpp)

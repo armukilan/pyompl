@@ -79,14 +79,12 @@ jobs:
           # Linux: install deps + build boost from source + build OMPL
           CIBW_BEFORE_ALL_LINUX: |
             dnf install -y cmake eigen3-devel curl gcc-c++ make
-            # Boost from source (dnf boost is too old)
             cd /tmp
             curl -L https://archives.boost.io/release/1.80.0/source/boost_1_80_0.tar.gz -o boost.tar.gz
             tar xzf boost.tar.gz
             cd /tmp/boost_1_80_0
             ./bootstrap.sh --with-libraries=serialization,thread,filesystem,date_time,chrono,atomic,system,program_options
             ./b2 install --prefix=/usr/local -j4
-            # Build OMPL
             cd /project/ompl
             cmake -B /project/ompl/build -S . \
               -DCMAKE_BUILD_TYPE=Release \
@@ -94,16 +92,11 @@ jobs:
               -DOMPL_BUILD_TESTS=OFF \
               -DOMPL_BUILD_PYTESTS=OFF \
               -DOMPL_BUILD_PYBINDINGS=OFF \
-              -DBUILD_SHARED_LIBS=OFF \
               -DBOOST_ROOT=/usr/local \
               -DBoost_ROOT=/usr/local
             cmake --build /project/ompl/build --config Release --target ompl -j4
-            echo "=== OMPL build done ==="
-            echo "=== Finding all ompl lib files ==="
-            find /project/ompl/build -name "*.a" -o -name "*.so" | head -20
-            echo "=== ompl build src contents ==="
-            ls /project/ompl/build/src/ompl/
-            ls /project/ompl/build/src/ompl/libompl.a
+            echo "=== OMPL built ==="
+            ls /project/ompl/build/src/ompl/libompl.so
 
           CIBW_BEFORE_BUILD: "pip install pybind11 scikit-build-core"
 
