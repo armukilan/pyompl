@@ -20,10 +20,11 @@ if sys.maxsize <= 2**32 and platform.system() == "Windows":
 # Check macOS version
 if platform.system() == "Darwin":
     mac_version = tuple(int(x) for x in platform.mac_ver()[0].split(".")[:2])
-    if mac_version < (11, 0):
+    if mac_version < (15, 0):
         raise RuntimeError(
-            "pyompl requires macOS 11.0 (Big Sur) or later. "
-            f"You are using macOS {platform.mac_ver()[0]}."
+            "pyompl requires macOS 15.0 (Sequoia) or later. "
+            f"You are using macOS {platform.mac_ver()[0]}. "
+            "Please upgrade your macOS."
         )
 
 # Check Linux glibc version

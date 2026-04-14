@@ -110,7 +110,7 @@ jobs:
             GITHUB_WORKSPACE="$env:GITHUB_WORKSPACE"
 
           CIBW_ENVIRONMENT_MACOS: >-
-            MACOSX_DEPLOYMENT_TARGET=11.0
+            MACOSX_DEPLOYMENT_TARGET=15.0
             GITHUB_WORKSPACE=$GITHUB_WORKSPACE
 
       - uses: actions/upload-artifact@v4
