@@ -42,8 +42,11 @@ elseif(APPLE)
     message(STATUS "Found OMPL lib: ${OMPL_LIB}")
 
     # OMPL 2.0.0 installs headers flat (no ompl-X.Y subdirectory)
+    # OMPL 2.0.0 installs headers in ompl-2.0 subdirectory
     find_path(OMPL_HEADERS ompl/base/SpaceInformation.h
         HINTS
+            "/usr/local/include/ompl-2.0"
+            "/opt/homebrew/include/ompl-2.0"
             "/usr/local/include"
             "/opt/homebrew/include"
         REQUIRED
