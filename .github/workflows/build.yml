@@ -99,6 +99,10 @@ jobs:
               -DBoost_ROOT=/usr/local
             cmake --build /project/ompl/build --config Release --target ompl -j4
             echo "=== OMPL build done ==="
+            echo "=== Finding all ompl lib files ==="
+            find /project/ompl/build -name "*.a" -o -name "*.so" | head -20
+            echo "=== ompl build src contents ==="
+            ls /project/ompl/build/src/ompl/
             ls /project/ompl/build/src/ompl/libompl.a
 
           CIBW_BEFORE_BUILD: "pip install pybind11 scikit-build-core"
