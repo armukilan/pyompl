@@ -18,6 +18,24 @@ if(WIN32)
 
     # VAMP is not supported on Windows AMD64 (rejected by VampConfig.cmake),
     # so FLANN is not needed. Build OMPL with OMPL_BUILD_VAMP=OFF on Windows.
+    find_library(FLANN_LIBRARY
+    NAMES flann_cpp flann
+    HINTS "C:/vcpkg/installed/x64-windows/lib"
+    REQUIRED
+    )
+    find_path(FLANN_INCLUDE_DIR
+        NAMES flann/flann.hpp
+        HINTS "C:/vcpkg/installed/x64-windows/include"
+        REQUIRED
+    )
+    if(NOT TARGET flann::flann)
+        add_library(flann::flann UNKNOWN IMPORTED)
+        set_target_properties(flann::flann PROPERTIES
+            IMPORTED_LOCATION "${FLANN_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${FLANN_INCLUDE_DIR}"
+        )
+    endif()
+    set(OMPL_EXTRA_LIBS flann::flann)
 
     set(OMPL_LIB "$ENV{GITHUB_WORKSPACE}/ompl/build/src/ompl/Release/ompl.lib")
     if(NOT EXISTS "${OMPL_LIB}")
@@ -27,7 +45,8 @@ if(WIN32)
         "C:/vcpkg/installed/x64-windows/include"
         "C:/vcpkg/installed/x64-windows/include/eigen3"
     )
-    set(OMPL_EXTRA_LIBS "")
+    # set(OMPL_EXTRA_LIBS "")
+    set(OMPL_EXTRA_LIBS flann::flann)
     set(OMPL_EXTRA_DEFINES BOOST_ALL_NO_LIB)
 
 elseif(APPLE)
