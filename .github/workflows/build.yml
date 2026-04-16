@@ -20,11 +20,16 @@ jobs:
           submodules: recursive
 
       # Pin OMPL submodule to 2.0.0 on all OSes
+      # - name: Pin OMPL submodule to 2.0.0
+      #   run: |
+      #     cd ompl
+      #     git fetch --tags
+      #     git checkout 2.0.0
       - name: Pin OMPL submodule to 2.0.0
         run: |
           cd ompl
-          git fetch --tags
-          git checkout 2.0.0
+          git fetch --tags upstream
+          git checkout main
 
       # - name: Install dependencies on Mac
       #   if: runner.os == 'macOS'
