@@ -33,6 +33,81 @@ jobs:
           cd ompl
           git checkout main -- CMakeModules/VampConfig.cmake
 
+
+
+      - name: Re-apply VAMP CompilerSettings fix on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $file = "ompl/external/vamp/cmake/CompilerSettings.cmake"
+          $content = @'
+          if(NOT DEFINED VAMP_ARCH)
+              string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _arch)
+              if(_arch STREQUAL "x86_64" OR _arch STREQUAL "amd64")
+                  if(MSVC)
+                      set(VAMP_ARCH "/arch:AVX2")
+                  else()
+                      set(VAMP_ARCH "-march=native -mavx2")
+                  endif()
+              elseif(_arch STREQUAL "aarch64" OR _arch STREQUAL "arm64")
+                  if(MSVC)
+                      set(VAMP_ARCH "")
+                  else()
+                      set(VAMP_ARCH "-mcpu=native -mtune=native")
+                      if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)
+                          string(APPEND VAMP_ARCH " -flax-vector-conversions")
+                      endif()
+                  endif()
+              else()
+                  message(FATAL_ERROR "Unsupported architecture ${CMAKE_SYSTEM_PROCESSOR}")
+              endif()
+          endif()
+
+          if(NOT MSVC)
+              set(VAMP_FAST_ARGS "-fno-math-errno -fno-signed-zeros -fno-trapping-math -fno-rounding-math -ffp-contract=fast")
+              string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _arch)
+              if(_arch STREQUAL "x86_64" OR _arch STREQUAL "amd64")
+                  string(APPEND VAMP_FAST_ARGS " -fassociative-math")
+                  if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+                      string(APPEND VAMP_FAST_ARGS " -fno-honor-infinities -fno-honor-nans")
+                      if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 11.0.0)
+                          string(APPEND VAMP_FAST_ARGS " -fapprox-func")
+                      endif()
+                  endif()
+              endif()
+              set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VAMP_ARCH} -Wall -Wextra -Wno-ignored-attributes")
+              set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
+              set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g")
+              set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 ${VAMP_FAST_ARGS}")
+              set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VAMP_ARCH} -Wall -Wextra -Wno-ignored-attributes")
+              set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -O0")
+              set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g")
+              set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 ${VAMP_FAST_ARGS}")
+          else()
+              set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VAMP_ARCH} /W3")
+              set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /fp:fast")
+              set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VAMP_ARCH} /W3")
+              set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /O2 /fp:fast")
+          endif()
+
+          if(VAMP_LTO)
+              if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+                  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+                  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -flto")
+              elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+                  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto=auto")
+                  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -flto=auto")
+              endif()
+          endif()
+          '@
+          Set-Content -Path $file -Value $content
+          Write-Host "Patched $file for Windows MSVC"
+
+
+
+
+
+
       # - name: Install dependencies on Mac
       #   if: runner.os == 'macOS'
       #   run: |
