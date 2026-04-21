@@ -64,6 +64,7 @@ from ._core import (
     SO2State,
     SO2StateSampler,
     SO2StateSpace,
+    SO3State, SO3StateSampler, SO3StateSpace
 )
 
 __all__ = [
