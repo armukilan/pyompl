@@ -1,4 +1,4 @@
-from ._core import hello, RealVectorStateSpace
+# from ._core import hello, RealVectorStateSpace
 import sys
 import platform
 
@@ -41,12 +41,28 @@ if platform.system() == "Linux":
         pass
 
 # Import compiled module
-try:
-    from ._core import hello, RealVectorStateSpace
-except ImportError as e:
-    raise ImportError(
-        "pyompl could not load the compiled OMPL module. "
-        "Your platform may not be supported. "
-        "Please check https://github.com/armukilan/pyompl "
-        f"for supported platforms. Original error: {e}"
-    )
+# try:
+#     from ._core import hello, RealVectorStateSpace
+# except ImportError as e:
+#     raise ImportError(
+#         "pyompl could not load the compiled OMPL module. "
+#         "Your platform may not be supported. "
+#         "Please check https://github.com/armukilan/pyompl "
+#         f"for supported platforms. Original error: {e}"
+#     )
+
+
+
+from ._core import (
+    StateSpace,
+    RealVectorBounds,
+    RealVectorState,
+    RealVectorStateSpace,
+)
+
+__all__ = [
+    "StateSpace",
+    "RealVectorBounds",
+    "RealVectorState",
+    "RealVectorStateSpace",
+]
