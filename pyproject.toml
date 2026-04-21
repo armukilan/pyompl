@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pyompl"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python bindings for the Open Motion Planning Library (OMPL)"
 requires-python = ">=3.10"
 readme = "README.md"

@@ -61,6 +61,9 @@ from ._core import (
     RealVectorState,
     RealVectorStateSampler,
     RealVectorStateSpace,
+    SO2State,
+    SO2StateSampler,
+    SO2StateSpace,
 )
 
 __all__ = [
