@@ -54,14 +54,19 @@ if platform.system() == "Linux":
 
 
 from ._core import (
+    SanityChecks,
     StateSpace,
+    CompoundStateSpace,
     RealVectorBounds,
     RealVectorState,
+    RealVectorStateSampler,
     RealVectorStateSpace,
 )
 
 __all__ = [
+    "SanityChecks",
     "StateSpace",
+    "CompoundStateSpace",
     "RealVectorBounds",
     "RealVectorState",
     "RealVectorStateSpace",
