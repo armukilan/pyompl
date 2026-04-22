@@ -66,6 +66,7 @@ from ._core import (
     SO2StateSpace,
     SO3State, SO3StateSampler, SO3StateSpace,
     SE2State, SE2StateSpace,
+    SE3State, SE3StateSpace,
 )
 
 # __all__ = [
@@ -75,6 +76,7 @@ from ._core import (
 #     "RealVectorBounds",
 #     "RealVectorState",
 #     "RealVectorStateSpace",
+
 # ]
 __all__ = [
     "SanityChecks",
