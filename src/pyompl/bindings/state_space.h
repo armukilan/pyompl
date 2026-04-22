@@ -453,27 +453,55 @@ inline void bind_state_space(py::module_ &m)
         "Do not instantiate directly. Use space.allocStateSampler() or\n"
         "space.allocDefaultStateSampler() to get a sampler.")
 
+        // .def("sampleUniform",
+        //      [](StateSampler &s, State *st) { s.sampleUniform(st); },
+        //      py::arg("state"),
+        //      "Sample a state uniformly at random within the space bounds.\n"
+        //      "C++: sampler->sampleUniform(state);")
+
+        // .def("sampleUniformNear",
+        //      [](StateSampler &s, State *st, const State *near, double dist) {
+        //          s.sampleUniformNear(st, near, dist);
+        //      },
+        //      py::arg("state"), py::arg("near"), py::arg("distance"),
+        //      "Sample a state near 'near' within 'distance'.\n"
+        //      "C++: sampler->sampleUniformNear(state, near, distance);")
+
+        // .def("sampleGaussian",
+        //      [](StateSampler &s, State *st, const State *mean, double stddev) {
+        //          s.sampleGaussian(st, mean, stddev);
+        //      },
+        //      py::arg("state"), py::arg("mean"), py::arg("stdDev"),
+        //      "Sample a state from a Gaussian centred at 'mean'.\n"
+        //      "C++: sampler->sampleGaussian(state, mean, stdDev);");
         .def("sampleUniform",
-             [](StateSampler &s, State *st) { s.sampleUniform(st); },
+             [](StateSampler &s, py::object st) {
+                 s.sampleUniform(st.cast<State *>());
+             },
              py::arg("state"),
              "Sample a state uniformly at random within the space bounds.\n"
              "C++: sampler->sampleUniform(state);")
 
         .def("sampleUniformNear",
-             [](StateSampler &s, State *st, const State *near, double dist) {
-                 s.sampleUniformNear(st, near, dist);
+             [](StateSampler &s, py::object st, py::object near, double dist) {
+                 s.sampleUniformNear(st.cast<State *>(),
+                                     near.cast<State *>(), dist);
              },
              py::arg("state"), py::arg("near"), py::arg("distance"),
              "Sample a state near 'near' within 'distance'.\n"
              "C++: sampler->sampleUniformNear(state, near, distance);")
 
         .def("sampleGaussian",
-             [](StateSampler &s, State *st, const State *mean, double stddev) {
-                 s.sampleGaussian(st, mean, stddev);
+             [](StateSampler &s, py::object st, py::object mean, double stddev) {
+                 s.sampleGaussian(st.cast<State *>(),
+                                  mean.cast<State *>(), stddev);
              },
              py::arg("state"), py::arg("mean"), py::arg("stdDev"),
              "Sample a state from a Gaussian centred at 'mean'.\n"
              "C++: sampler->sampleGaussian(state, mean, stdDev);");
+
+
+
         
     py::class_<CompoundStateSpace, StateSpace,
                std::shared_ptr<CompoundStateSpace>>(m, "CompoundStateSpace",

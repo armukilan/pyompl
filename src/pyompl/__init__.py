@@ -64,14 +64,32 @@ from ._core import (
     SO2State,
     SO2StateSampler,
     SO2StateSpace,
-    SO3State, SO3StateSampler, SO3StateSpace
+    SO3State, SO3StateSampler, SO3StateSpace,
+    SE2State, SE2StateSpace,
 )
 
+# __all__ = [
+#     "SanityChecks",
+#     "StateSpace",
+#     "CompoundStateSpace",
+#     "RealVectorBounds",
+#     "RealVectorState",
+#     "RealVectorStateSpace",
+# ]
 __all__ = [
     "SanityChecks",
     "StateSpace",
     "CompoundStateSpace",
     "RealVectorBounds",
     "RealVectorState",
+    "RealVectorStateSampler",
     "RealVectorStateSpace",
+    "SO2State",
+    "SO2StateSampler",
+    "SO2StateSpace",
+    "SO3State",
+    "SO3StateSampler",
+    "SO3StateSpace",
+    "SE2State",
+    "SE2StateSpace",
 ]
