@@ -7,6 +7,7 @@ namespace py = pybind11;
 #include "bindings/so3_state_space.h"
 #include "bindings/se2_state_space.h"
 #include "bindings/se3_state_space.h"
+#include "bindings/time_state_space.h"
 
 PYBIND11_MODULE(_core, m) {
     m.doc() = "pyompl - Python bindings for OMPL 2.0.0";
@@ -16,4 +17,5 @@ PYBIND11_MODULE(_core, m) {
     bind_so3_state_space(m);
     bind_se2_state_space(m);
     bind_se3_state_space(m);
+    bind_time_state_space(m);
 }

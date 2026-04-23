@@ -67,6 +67,7 @@ from ._core import (
     SO3State, SO3StateSampler, SO3StateSpace,
     SE2State, SE2StateSpace,
     SE3State, SE3StateSpace,
+    TimeState, TimeStateSampler, TimeStateSpace,
 )
 
 # __all__ = [
