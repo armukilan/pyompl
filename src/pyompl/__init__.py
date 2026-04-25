@@ -68,6 +68,9 @@ from ._core import (
     SE2State, SE2StateSpace,
     SE3State, SE3StateSpace,
     TimeState, TimeStateSampler, TimeStateSpace,
+    DiscreteState,
+    DiscreteStateSampler,
+    DiscreteStateSpace,
 )
 
 # __all__ = [
