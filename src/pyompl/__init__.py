@@ -71,6 +71,7 @@ from ._core import (
     DiscreteState,
     DiscreteStateSampler,
     DiscreteStateSpace,
+    SpaceTimeStateSpace,
 )
 
 # __all__ = [

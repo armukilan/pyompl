@@ -6,6 +6,7 @@
 #include <ompl/base/State.h>
 #include <ompl/base/StateSpace.h>
 #include <ompl/base/StateSampler.h>
+// #include <ompl/base/CompoundState.h>   // add this line
 
 namespace py = pybind11;
 using namespace ompl::base;
@@ -241,6 +242,13 @@ inline void bind_state_space(py::module_ &m)
                "Check serialize/deserialize work correctly.")
         .export_values();
 
+    py::class_<State, std::unique_ptr<State, py::nodelete>>(m, "State",
+        "Opaque base state handle. Use through the space methods only.\n"
+        "C++: ompl::base::State");
+
+    py::class_<CompoundState, State, std::unique_ptr<CompoundState, py::nodelete>>(m, "CompoundState",
+        "Opaque compound state handle.\n"
+        "C++: ompl::base::CompoundState");
     // ------------------------------------------------------------------ //
     //  StateSpace (abstract base)
     // ------------------------------------------------------------------ //
