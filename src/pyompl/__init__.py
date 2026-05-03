@@ -75,6 +75,8 @@ from ._core import (
     EmptyStateSpace, 
     WrapperStateSpace,
     HybridTimeStateSpace,
+    util,
+
 )
 
 # __all__ = [
@@ -102,4 +104,5 @@ __all__ = [
     "SO3StateSpace",
     "SE2State",
     "SE2StateSpace",
+    "Util"
 ]
