@@ -76,6 +76,11 @@ from ._core import (
     WrapperStateSpace,
     HybridTimeStateSpace,
     util,
+    Cost,
+    GoalType,
+    PlannerStatus,
+    PlannerStatusType,
+    StateSpaceType
 
 )
 

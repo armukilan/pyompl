@@ -12,6 +12,7 @@ namespace py = pybind11;
 #include "bindings/space_time_state_space.h"
 #include "bindings/extra_state_space.h"
 #include "bindings/util.h"
+#include "bindings/basetypes.h"
 
 PYBIND11_MODULE(_core, m) {
     m.doc() = "pyompl - Python bindings for OMPL 2.0.0";
@@ -26,4 +27,5 @@ PYBIND11_MODULE(_core, m) {
     bind_space_time_state_space(m);
     bind_extra_state_spaces(m);
     bind_util(m);
+    bind_base_types(m);
 }
