@@ -80,7 +80,8 @@ from ._core import (
     GoalType,
     PlannerStatus,
     PlannerStatusType,
-    StateSpaceType
+    StateSpaceType,
+    ParamSet,
 
 )
 

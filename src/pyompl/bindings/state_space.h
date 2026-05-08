@@ -438,6 +438,13 @@ inline void bind_state_space(py::module_ &m)
              "Run sanity checks on this space. Throws if any check fails.\n"
              "C++: space->sanityChecks();")
 
+        .def("params",
+         [](StateSpace &s) -> ParamSet& {
+             return s.params();
+         },
+         py::return_value_policy::reference_internal,
+         "Return the ParamSet associated with this state space.")
+
         // --- Setup ---
         .def("setup",                 &ss_setup,
              "Perform final setup. Called automatically by SpaceInformation.\n"
