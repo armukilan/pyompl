@@ -440,6 +440,61 @@ phs_pt = phs.transform(sphere_pt)
 print(f"  transform({sphere_pt}) → {[round(v,4) for v in phs_pt]}")
 check(len(phs_pt) == 2, "transformed point has 2 dimensions")
 
+# ==============================================================
+# PART 5b: RNG sampling from a ProlateHyperspheroid
+# ==============================================================
+print("\n" + "=" * 60)
+print("PART 5b: RNG ↔ ProlateHyperspheroid sampling (ompl/pyompl.util/RandomNumbers.h)")
+print("=" * 60)
+print("""
+WHAT ARE THESE?
+-----------------
+RNG.uniformProlateHyperspheroidSurface(phs) and
+RNG.uniformProlateHyperspheroid(phs) connect the RNG class to
+a ProlateHyperspheroid, letting you actually draw random states
+from the informed set — not just query it with isInPhs/isOnPhs.
+
+This is the exact sampling step used internally by Informed RRT*
+and BIT* to propose new states once a solution exists:
+  - Build a PHS with foci = start, goal
+  - Set transverseDiameter = current best path cost
+  - Sample INSIDE the PHS instead of the whole state space
+  - Every sample is guaranteed to be able to improve the solution
+
+C++ functions:
+  RNG::uniformProlateHyperspheroidSurface(phsPtr, value)  — surface only
+  RNG::uniformProlateHyperspheroid(phsPtr, value)         — interior (volume)
+
+Python equivalents:
+  rng.uniformProlateHyperspheroidSurface(phs)
+  rng.uniformProlateHyperspheroid(phs)
+""")
+
+rng_phs = pyompl.util.RNG()
+
+print("-- uniformProlateHyperspheroid() — random point INSIDE the PHS --")
+inside_pt = rng_phs.uniformProlateHyperspheroid(phs)
+print(f"  sampled point: {[round(v,4) for v in inside_pt]}")
+print(f"  isInPhs(sampled point) = {phs.isInPhs(inside_pt)}")
+check(len(inside_pt) == phs.getDimension(), "sampled point has correct dimension")
+check(phs.isInPhs(inside_pt), "sampled point is inside the PHS")
+
+print("\n-- uniformProlateHyperspheroidSurface() — random point ON the PHS surface --")
+surface_pt = rng_phs.uniformProlateHyperspheroidSurface(phs)
+print(f"  sampled point: {[round(v,4) for v in surface_pt]}")
+print(f"  isOnPhs(sampled point) = {phs.isOnPhs(surface_pt)}")
+check(len(surface_pt) == phs.getDimension(), "sampled point has correct dimension")
+check(phs.isOnPhs(surface_pt), "sampled point lies on the PHS surface")
+
+print("\n-- Repeated sampling: all interior points satisfy isInPhs --")
+n_samples = 50
+inside_count = sum(
+    phs.isInPhs(rng_phs.uniformProlateHyperspheroid(phs))
+    for _ in range(n_samples)
+)
+print(f"  {inside_count}/{n_samples} samples landed inside the PHS")
+check(inside_count == n_samples, f"all {n_samples} volume samples are inside PHS")
+
 
 # ==============================================================
 # PART 6: PPM Image (if file available)

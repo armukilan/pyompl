@@ -128,6 +128,31 @@ static std::vector<double> rng_uniform_in_ball(ompl::RNG &r, double radius, int 
     return v;
 }
 
+// Newly added
+static std::vector<double> rng_uniform_phs_surface(
+    ompl::RNG &r,
+    const std::shared_ptr<const ompl::ProlateHyperspheroid> &phs)
+{
+    // C++: rng.uniformProlateHyperspheroidSurface(phsPtr, value)
+    // Samples a random point on the SURFACE of the given PHS.
+    // Returns a list of phs->getDimension() doubles.
+    std::vector<double> v(phs->getDimension());
+    r.uniformProlateHyperspheroidSurface(phs, v.data());
+    return v;
+}
+
+static std::vector<double> rng_uniform_phs(
+    ompl::RNG &r,
+    const std::shared_ptr<const ompl::ProlateHyperspheroid> &phs)
+{
+    // C++: rng.uniformProlateHyperspheroid(phsPtr, value)
+    // Samples a random point INSIDE the given PHS (volume, not surface).
+    // Returns a list of phs->getDimension() doubles.
+    std::vector<double> v(phs->getDimension());
+    r.uniformProlateHyperspheroid(phs, v.data());
+    return v;
+}
+
 // ===========================================================================
 // Time helpers
 // ===========================================================================
@@ -383,6 +408,23 @@ inline void bind_util(py::module_ &m)
             "C++: rng.uniformInBall(r, v)  (v is std::vector<double>)\n\n"
             "The distribution is uniform in Cartesian coordinates.\n"
             "Returns a Python list of 'dim' doubles.")
+
+        .def("uniformProlateHyperspheroidSurface", &rng_uniform_phs_surface,
+            py::arg("phs"),
+            "Sample a random point on the SURFACE of a prolate hyperspheroid.\n\n"
+            "C++: rng.uniformProlateHyperspheroidSurface(phsPtr, value)\n\n"
+            "Used by informed samplers to propose candidate states\n"
+            "on the boundary of the informed set.\n"
+            "Returns a Python list of phs.getDimension() doubles.")
+
+        .def("uniformProlateHyperspheroid", &rng_uniform_phs,
+            py::arg("phs"),
+            "Sample a random point INSIDE a prolate hyperspheroid.\n\n"
+            "C++: rng.uniformProlateHyperspheroid(phsPtr, value)\n\n"
+            "This is the core sampling step used by Informed RRT* / BIT*\n"
+            "to draw states only from the region that could improve\n"
+            "the current best solution.\n"
+            "Returns a Python list of phs.getDimension() doubles.")
 
         // Seed control
         .def("getLocalSeed", &ompl::RNG::getLocalSeed,
