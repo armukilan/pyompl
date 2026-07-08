@@ -54,6 +54,8 @@ if platform.system() == "Linux":
 
 
 from ._core import (
+    State,
+    CompoundState,
     SanityChecks,
     StateSpace,
     CompoundStateSpace,
@@ -86,6 +88,8 @@ from ._core import (
 )
 
 __all__ = [
+    "State",
+    "CompoundState",
     "SanityChecks",
     "StateSpace",
     "CompoundStateSpace",
