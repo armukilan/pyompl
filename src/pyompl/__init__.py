@@ -82,26 +82,9 @@ from ._core import (
     PlannerStatusType,
     StateSpaceType,
     ParamSet,
-
-
-
-
-    
-
-
-
-
+    datastructures,
 )
 
-# __all__ = [
-#     "SanityChecks",
-#     "StateSpace",
-#     "CompoundStateSpace",
-#     "RealVectorBounds",
-#     "RealVectorState",
-#     "RealVectorStateSpace",
-
-# ]
 __all__ = [
     "SanityChecks",
     "StateSpace",
@@ -118,5 +101,6 @@ __all__ = [
     "SO3StateSpace",
     "SE2State",
     "SE2StateSpace",
-    "Util"
+    "Util",
+    "datastructures"
 ]

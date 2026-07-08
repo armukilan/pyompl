@@ -14,6 +14,7 @@ namespace py = pybind11;
 #include "bindings/util.h"
 #include "bindings/basetypes.h"
 #include "bindings/generic_param.h"
+#include "bindings/bind_datastructures.h" 
 
 PYBIND11_MODULE(_core, m) {
     m.doc() = "pyompl - Python bindings for OMPL 2.0.0";
@@ -30,4 +31,5 @@ PYBIND11_MODULE(_core, m) {
     bind_util(m);
     bind_base_types(m);
     bind_generic_param(m);
+    bind_datastructures(m); 
 }
