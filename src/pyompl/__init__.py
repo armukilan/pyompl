@@ -55,6 +55,7 @@ if platform.system() == "Linux":
 
 from ._core import (
     State,
+    MotionValidator,
     CompoundState,
     SanityChecks,
     StateSpace,
@@ -89,6 +90,7 @@ from ._core import (
 
 __all__ = [
     "State",
+    "MotionValidator",
     "CompoundState",
     "SanityChecks",
     "StateSpace",

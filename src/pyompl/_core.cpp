@@ -2,6 +2,7 @@
 namespace py = pybind11;
 
 #include "bindings/state.h"
+#include "bindings/motion_validator.h" 
 #include "bindings/state_space.h"
 #include "bindings/base_state_space.h"
 #include "bindings/so2_state_space.h"
@@ -20,6 +21,7 @@ namespace py = pybind11;
 PYBIND11_MODULE(_core, m) {
     m.doc() = "pyompl - Python bindings for OMPL 2.0.0";
     bind_state(m);
+    bind_motion_validator(m); 
     bind_state_space(m);
     bind_base_state_space(m);
     bind_so2_state_space(m);
